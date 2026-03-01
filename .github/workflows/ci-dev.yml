@@ -1,0 +1,39 @@
+# .github/workflows/ci-dev.yml
+# ─────────────────────────────────────────────────────────────
+# Push to main → build all images → deploy to dev.
+# ── PROJECT-SPECIFIC: edit the `with:` values below. ─────────
+# ─────────────────────────────────────────────────────────────
+name: CI → Dev
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-dev-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      # ┌──────────────────────────────────────────────────────┐
+      # │  EDIT: list your Docker images here                  │
+      # │  name   = image name in registry                     │
+      # │  context    = docker build context path              │
+      # │  dockerfile = path to Dockerfile                     │
+      # └──────────────────────────────────────────────────────┘
+      images: >-
+        [
+          { "name": "MY_PROJECT-backend",  "context": "./backend",  "dockerfile": "./backend/Dockerfile" },
+          { "name": "MY_PROJECT-frontend", "context": "./frontend", "dockerfile": "./frontend/Dockerfile" }
+        ]
+
+  deploy:
+    needs: build
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: dev
+      namespace: MY_PROJECT-dev        # EDIT: your dev namespace
+      deployments: "backend,frontend"  # EDIT: comma-separated deployment names
+      rollout_timeout: "600s"

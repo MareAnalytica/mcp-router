@@ -1,0 +1,27 @@
+# .github/workflows/deploy-branch-dev.yml
+# ─────────────────────────────────────────────────────────────
+# Manually build + deploy any branch to dev.
+# Trigger from: Actions tab → "Deploy Branch → Dev" → Run workflow → pick branch
+# ─────────────────────────────────────────────────────────────
+name: Deploy Branch → Dev
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      images: >-
+        [
+          { "name": "MY_PROJECT-backend",  "context": "./backend",  "dockerfile": "./backend/Dockerfile" },
+          { "name": "MY_PROJECT-frontend", "context": "./frontend", "dockerfile": "./frontend/Dockerfile" }
+        ]
+
+  deploy:
+    needs: build
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: dev
+      namespace: MY_PROJECT-dev
+      deployments: "backend,frontend"

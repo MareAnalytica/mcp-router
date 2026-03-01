@@ -1,0 +1,18 @@
+# kube/overlays/prod/kustomization.yaml
+# Production overlay — uses base resources and namespace as-is
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: MY_PROJECT
+
+resources:
+  - ../../base
+
+patches:
+  - target:
+      kind: Namespace
+      name: MY_PROJECT
+    patch: |
+      - op: replace
+        path: /metadata/name
+        value: MY_PROJECT

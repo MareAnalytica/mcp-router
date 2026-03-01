@@ -1,0 +1,6 @@
+# kube/base/namespace.yaml
+# EDIT: replace MY_PROJECT with your project name
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: MY_PROJECT

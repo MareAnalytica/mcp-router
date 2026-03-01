@@ -1,0 +1,56 @@
+# kube/overlays/dev/kustomization.yaml
+# Dev environment overlay — smaller resources, separate namespace
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: MY_PROJECT-dev
+
+resources:
+  - ../../base
+
+patches:
+  # Override namespace name for dev
+  - target:
+      kind: Namespace
+      name: MY_PROJECT
+    patch: |
+      - op: replace
+        path: /metadata/name
+        value: MY_PROJECT-dev
+
+  # Override ingress host for dev
+  - target:
+      kind: Ingress
+      name: MY_PROJECT
+    patch: |
+      - op: replace
+        path: /spec/tls/0/hosts/0
+        value: MY_PROJECT-dev.mareanalytica.com
+      - op: replace
+        path: /spec/tls/0/secretName
+        value: MY_PROJECT-dev-tls
+      - op: replace
+        path: /spec/rules/0/host
+        value: MY_PROJECT-dev.mareanalytica.com
+
+  # Reduce resources for dev
+  - target:
+      kind: Deployment
+      name: backend
+    patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: backend
+      spec:
+        template:
+          spec:
+            containers:
+              - name: backend
+                resources:
+                  requests:
+                    memory: "128Mi"
+                    cpu: "50m"
+                  limits:
+                    memory: "512Mi"
+                    cpu: "500m"

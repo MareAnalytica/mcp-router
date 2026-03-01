@@ -1,0 +1,31 @@
+# .github/workflows/release-prod.yml
+# ─────────────────────────────────────────────────────────────
+# Tag v* → build all images → deploy to prod.
+# ── PROJECT-SPECIFIC: edit the `with:` values below. ─────────
+# ─────────────────────────────────────────────────────────────
+name: Release → Prod
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      # ┌──────────────────────────────────────────────────────┐
+      # │  EDIT: same image list as ci-dev.yml                 │
+      # └──────────────────────────────────────────────────────┘
+      images: >-
+        [
+          { "name": "MY_PROJECT-backend",  "context": "./backend",  "dockerfile": "./backend/Dockerfile" },
+          { "name": "MY_PROJECT-frontend", "context": "./frontend", "dockerfile": "./frontend/Dockerfile" }
+        ]
+
+  deploy:
+    needs: build
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: prod
+      namespace: MY_PROJECT            # EDIT: your prod namespace
+      deployments: "backend,frontend"  # EDIT: comma-separated deployment names
