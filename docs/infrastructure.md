@@ -129,13 +129,11 @@ Tag v* ─────► build.yml ──► deploy.yml ──► prod
 
 | File | Type | Purpose |
 |------|------|---------|
-| `build.yml` | Reusable | Build & push Docker images (copy as-is) |
-| `deploy.yml` | Reusable | Deploy via kustomize (copy as-is) |
-| `ci-dev.yml` | Caller | Push to main → build + deploy to dev (edit per project) |
-| `release-prod.yml` | Caller | Tag v* → build + deploy to prod (edit per project) |
-| `deploy-branch-dev.yml` | Caller | Manual deploy of any branch to dev (edit per project) |
-
-## Namespaces
+| `_build.yml` | Reusable | Build & push Docker images (copy as-is) |
+| `_deploy.yml` | Reusable | Deploy via kustomize (copy as-is) |
+| `dev-push.yml` | Caller | Push to main → build + deploy to dev (edit per project) |
+| `dev-manual.yml` | Caller | Manual deploy of any branch to dev (edit per project) |
+| `prod-tag.yml` | Caller | Tag v* → build + deploy to prod (edit per project) |
 
 Each project gets two namespaces:
 - `<project>-dev` — dev environment (push to main)

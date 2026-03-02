@@ -1,4 +1,4 @@
-# .github/workflows/deploy-branch-dev.yml
+# .github/workflows/dev-manual.yml
 # ─────────────────────────────────────────────────────────────
 # Manually build + deploy any branch to dev.
 # Trigger from: Actions tab → "Deploy Branch → Dev" → Run workflow → pick branch
@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    uses: ./.github/workflows/build.yml
+    uses: ./.github/workflows/_build.yml
     with:
       images: >-
         [
@@ -20,7 +20,7 @@ jobs:
 
   deploy:
     needs: build
-    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/_deploy.yml
     with:
       environment: dev
       namespace: MY_PROJECT-dev

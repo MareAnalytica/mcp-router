@@ -1,4 +1,4 @@
-# .github/workflows/deploy.yml
+# .github/workflows/_deploy.yml
 # ─────────────────────────────────────────────────────────────
 # Reusable workflow: deploy to k3s using kustomize overlay.
 # Runs on ARC (k3s) — kubectl uses in-cluster ServiceAccount.

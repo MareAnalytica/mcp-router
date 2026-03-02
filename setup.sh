@@ -22,9 +22,9 @@ grep -rl "${PROJECT}" --include='*.yml' --include='*.yaml' --include='*.md' . | 
 
 echo ""
 echo "Next steps:"
-echo "  1. Add your Dockerfiles (backend/Dockerfile, frontend/Dockerfile, etc.)"
-echo "  2. Update the images list in .github/workflows/ci-dev.yml"
-echo "  3. Update kube/base/secrets.yaml with your DB credentials"
-echo "  4. Push to main and watch the pipeline run"
+echo "  1. Add your Dockerfiles"
+echo "  2. Update the images list in .github/workflows/dev-push.yml"
+echo "  3. Update kube/base/ with your Kubernetes manifests"
+echo "  4. Open a PR to main and watch the pipeline run"
 echo ""
 echo "Your service will be at: https://${PROJECT}-dev.mareanalytica.com"

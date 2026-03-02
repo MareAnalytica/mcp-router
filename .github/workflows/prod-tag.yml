@@ -1,4 +1,4 @@
-# .github/workflows/release-prod.yml
+# .github/workflows/prod-tag.yml
 # ─────────────────────────────────────────────────────────────
 # Tag v* → build all images → deploy to prod.
 # ── PROJECT-SPECIFIC: edit the `with:` values below. ─────────
@@ -11,10 +11,10 @@ on:
 
 jobs:
   build:
-    uses: ./.github/workflows/build.yml
+    uses: ./.github/workflows/_build.yml
     with:
       # ┌──────────────────────────────────────────────────────┐
-      # │  EDIT: same image list as ci-dev.yml                 │
+      # │  EDIT: same image list as dev-push.yml               │
       # └──────────────────────────────────────────────────────┘
       images: >-
         [
@@ -24,7 +24,7 @@ jobs:
 
   deploy:
     needs: build
-    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/_deploy.yml
     with:
       environment: prod
       namespace: MY_PROJECT            # EDIT: your prod namespace

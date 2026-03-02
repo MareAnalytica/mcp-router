@@ -1,4 +1,4 @@
-# .github/workflows/ci-dev.yml
+# .github/workflows/dev-push.yml
 # ─────────────────────────────────────────────────────────────
 # Push to main → build all images → deploy to dev.
 # ── PROJECT-SPECIFIC: edit the `with:` values below. ─────────
@@ -10,12 +10,12 @@ on:
     branches: [main]
 
 concurrency:
-  group: ci-dev-${{ github.ref }}
+  group: dev-push-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   build:
-    uses: ./.github/workflows/build.yml
+    uses: ./.github/workflows/_build.yml
     with:
       # ┌──────────────────────────────────────────────────────┐
       # │  EDIT: list your Docker images here                  │
@@ -31,7 +31,7 @@ jobs:
 
   deploy:
     needs: build
-    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/_deploy.yml
     with:
       environment: dev
       namespace: MY_PROJECT-dev        # EDIT: your dev namespace

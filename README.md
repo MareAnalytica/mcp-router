@@ -34,9 +34,9 @@ Add one or more `Dockerfile`s for your service components. The directory structu
 ### 4. Update the workflow image lists
 
 Edit these files and update the `images` JSON array to match your Dockerfiles:
-- `.github/workflows/ci-dev.yml`
-- `.github/workflows/release-prod.yml`
-- `.github/workflows/deploy-branch-dev.yml`
+- `.github/workflows/dev-push.yml`
+- `.github/workflows/prod-tag.yml`
+- `.github/workflows/dev-manual.yml`
 
 Example for a single-image project:
 ```yaml
@@ -89,11 +89,11 @@ Available at: `https://my-new-service.mareanalytica.com`
 
 ```
 .github/workflows/
-  build.yml              # Reusable: build + push Docker images (DO NOT EDIT)
-  deploy.yml             # Reusable: deploy via kustomize (DO NOT EDIT)
-  ci-dev.yml             # Push main → build + deploy to dev (edit per project)
-  release-prod.yml       # Tag v* → build + deploy to prod (edit per project)
-  deploy-branch-dev.yml  # Manual deploy any branch to dev (edit per project)
+  _build.yml             # Reusable: build + push Docker images (DO NOT EDIT)
+  _deploy.yml            # Reusable: deploy via kustomize (DO NOT EDIT)
+  dev-push.yml           # Push main → build + deploy to dev (edit per project)
+  dev-manual.yml         # Manual deploy any branch to dev (edit per project)
+  prod-tag.yml           # Tag v* → build + deploy to prod (edit per project)
 
 kube/
   base/                  # Your Kubernetes .yaml manifests go here

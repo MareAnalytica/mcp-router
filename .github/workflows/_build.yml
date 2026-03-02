@@ -1,4 +1,4 @@
-# .github/workflows/build.yml
+# .github/workflows/_build.yml
 # ─────────────────────────────────────────────────────────────
 # Reusable workflow: build Docker images and push to in-cluster
 # registry. Runs on ARC (k3s) with Docker-in-Docker.
