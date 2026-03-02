@@ -29,27 +29,16 @@ find . -type f \( -name '*.yml' -o -name '*.yaml' -o -name '*.md' \) \
 
 ### 3. Add your Dockerfiles
 
-Create your service directories with Dockerfiles:
-```
-my-new-service/
-├── backend/
-│   ├── Dockerfile
-│   ├── requirements.txt
-│   └── app/
-├── frontend/
-│   ├── Dockerfile
-│   ├── nginx.conf
-│   └── static/
-```
+Add one or more `Dockerfile`s for your service components. The directory structure is up to you — organize it however makes sense for your project.
 
 ### 4. Update the workflow image lists
 
-Edit these files and update the `images` JSON array:
+Edit these files and update the `images` JSON array to match your Dockerfiles:
 - `.github/workflows/ci-dev.yml`
 - `.github/workflows/release-prod.yml`
 - `.github/workflows/deploy-branch-dev.yml`
 
-Example for a single-service project:
+Example for a single-image project:
 ```yaml
 images: >-
   [
@@ -59,28 +48,35 @@ images: >-
 
 ### 5. Update kube manifests
 
-- Edit `kube/base/secrets.yaml` with your DB credentials
-- Edit `kube/base/backend.yaml` with your backend config (ports, env vars, health check)
-- Edit `kube/base/frontend.yaml` with your frontend config and Ingress host
-- Remove `kube/base/postgres.yaml` if you don't need a database
-- Update `kube/base/kustomization.yaml` to list your manifest files
+Add your Kubernetes `.yaml` files to `kube/base/` and list them in `kube/base/kustomization.yaml`. The template includes some example manifests to get you started — edit or replace them as needed.
 
-### 6. Push to main
+### 6. Open a PR to main
 
 ```bash
+git checkout -b initial-setup
 git add -A
 git commit -m "Initial service setup"
-git push origin main
+git push origin initial-setup
 ```
 
-This triggers the CI/CD pipeline:
+Open a pull request on GitHub. Once reviewed and merged to `main`, the CI/CD pipeline runs automatically:
 1. **Build** — Docker images are built and pushed to `registry.mareanalytica.com`
 2. **Deploy** — Kustomize applies to `my-new-service-dev` namespace
 3. **Rollout** — Deployments are restarted and verified
 
 Your service will be available at: `https://my-new-service-dev.mareanalytica.com`
 
-### 7. Deploy to production
+### 7. Deploy a branch to dev (manual)
+
+You can deploy any branch to dev without merging by using the **Deploy Branch → Dev** workflow:
+
+1. Go to the **Actions** tab on GitHub
+2. Select **Deploy Branch → Dev** from the workflow list
+3. Click **Run workflow** and pick the branch you want to deploy
+
+This builds the images from that branch and deploys them to the dev environment, letting you test changes before opening a PR.
+
+### 8. Deploy to production
 
 ```bash
 git tag v1.0.0
@@ -100,13 +96,8 @@ Available at: `https://my-new-service.mareanalytica.com`
   deploy-branch-dev.yml  # Manual deploy any branch to dev (edit per project)
 
 kube/
-  base/                  # Base Kubernetes manifests
+  base/                  # Your Kubernetes .yaml manifests go here
     kustomization.yaml
-    namespace.yaml
-    secrets.yaml
-    postgres.yaml        # Optional: remove if no DB needed
-    backend.yaml
-    frontend.yaml
   overlays/
     dev/kustomization.yaml   # Dev overrides (namespace, hosts, resources)
     prod/kustomization.yaml  # Prod overrides
@@ -123,20 +114,24 @@ docs/
 ## Pipeline Overview
 
 ```
-┌─────────────┐     ┌──────────────┐     ┌──────────────────┐
-│  Push main  │────►│  Build imgs  │────►│  Deploy to dev   │
-└─────────────┘     │  (DinD on    │     │  (kubectl apply  │
-                    │   ARC runner)│     │   -k overlays/   │
-┌─────────────┐     │              │     │   dev)           │
-│  Tag v*     │────►│              │────►│  Deploy to prod  │
-└─────────────┘     └──────────────┘     └──────────────────┘
+┌──────────────┐     ┌──────────────┐     ┌──────────────────┐
+│  PR → main   │────►│  Build imgs  │────►│  Deploy to dev   │
+│  (merged)    │     │  (DinD on    │     │  (kubectl apply  │
+│              │     │   ARC runner)│     │   -k overlays/   │
+┌──────────────┐     │              │     │   dev)           │
+│  Tag v*      │────►│              │────►│  Deploy to prod  │
+└──────────────┘     └──────────────┘     └──────────────────┘
                            │
-                    ┌──────┴──────┐
-                    │  registry.  │
-                    │  mare       │
-                    │  analytica  │
-                    │  .com       │
-                    └─────────────┘
+┌──────────────┐           │
+│  Manual:     │───────────┘
+│  Deploy      │
+│  Branch→Dev  │
+└──────────────┘     ┌─────────────┐
+                     │  registry.  │
+                     │  mare       │
+                     │  analytica  │
+                     │  .com       │
+                     └─────────────┘
 ```
 
 ## Adding a New Service Component
@@ -146,7 +141,7 @@ docs/
 3. Add a `kube/base/<service>.yaml` with Deployment + Service
 4. Add it to `kube/base/kustomization.yaml`
 5. Add the deployment name to the `deployments` list in the caller workflows
-6. Push — it auto-builds and deploys
+6. Open a PR — once merged, it auto-builds and deploys
 
 ## Troubleshooting
 
