@@ -39,7 +39,7 @@ export function SettingsPage() {
   // Generate MCP token mutation
   const generateTokenMutation = useMutation({
     mutationFn: async () => {
-      const response = await api.post('/api/auth/mcp-token');
+      const response = await api.post('/auth/mcp-token');
       return response.data.access_token;
     },
     onSuccess: (token) => {
