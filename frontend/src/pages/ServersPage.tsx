@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router';
-import { Plus, Server, Trash2 } from 'lucide-react';
-import { listServers, createServer, deleteServer, toggleServer } from '@/api/servers';
+import { Plus, Server, Trash2, Zap, Loader2 } from 'lucide-react';
+import { listServers, createServer, deleteServer, toggleServer, testConnection, type TestConnectionResult } from '@/api/servers';
 import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { StatusBadge } from '@/components/shared/StatusBadge';
@@ -164,6 +164,7 @@ function AddServerDialog({
 
 export function ServersPage() {
   const [showAdd, setShowAdd] = useState(false);
+  const [testResult, setTestResult] = useState<(TestConnectionResult & { id: string }) | null>(null);
   const queryClient = useQueryClient();
 
   const { data: servers, isLoading } = useQuery({
@@ -179,6 +180,22 @@ export function ServersPage() {
   const deleteMutation = useMutation({
     mutationFn: deleteServer,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['servers'] }),
+  });
+
+  const testMutation = useMutation({
+    mutationFn: (id: string) => testConnection(id),
+    onSuccess: (data, id) => setTestResult({ ...data, id }),
+    onError: (_err, id) =>
+      setTestResult({
+        id,
+        status: 'error',
+        server_name: '',
+        transport_type: '',
+        response_time_ms: 0,
+        tools_count: 0,
+        tools: [],
+        error: 'Request failed. The server may be unreachable.',
+      }),
   });
 
   if (isLoading) {
@@ -265,6 +282,22 @@ export function ServersPage() {
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
+                          onClick={() => {
+                            setTestResult(null);
+                            testMutation.mutate(server.id);
+                          }}
+                          disabled={testMutation.isPending && testMutation.variables === server.id}
+                          className="rounded-md px-2.5 py-1 text-xs font-medium border border-border hover:bg-accent transition-colors disabled:opacity-50 inline-flex items-center gap-1"
+                          title="Test connection"
+                        >
+                          {testMutation.isPending && testMutation.variables === server.id ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <Zap className="h-3 w-3" />
+                          )}
+                          Test
+                        </button>
+                        <button
                           onClick={() => toggleMutation.mutate(server.id)}
                           className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                             server.is_enabled
@@ -292,6 +325,59 @@ export function ServersPage() {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* Test Connection Result */}
+      {testResult && (
+        <div className={`mt-4 rounded-lg border p-5 ${
+          testResult.status === 'ok'
+            ? 'border-success/30 bg-success/5'
+            : 'border-destructive/30 bg-destructive/5'
+        }`}>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold text-sm">
+              Connection Test: {testResult.server_name || 'Server'}
+            </h3>
+            <button
+              onClick={() => setTestResult(null)}
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              Dismiss
+            </button>
+          </div>
+
+          {testResult.status === 'ok' ? (
+            <div className="space-y-2 text-sm">
+              <p className="text-success font-medium">Connection successful</p>
+              <div className="flex gap-6 text-muted-foreground">
+                <span>Transport: <code className="font-mono text-foreground">{testResult.transport_type}</code></span>
+                <span>Response: <code className="font-mono text-foreground">{testResult.response_time_ms}ms</code></span>
+                <span>Tools: <code className="font-mono text-foreground">{testResult.tools_count}</code></span>
+              </div>
+              {testResult.tools.length > 0 && (
+                <div className="mt-2">
+                  <p className="text-xs text-muted-foreground mb-1">Available tools:</p>
+                  <div className="flex flex-wrap gap-1">
+                    {testResult.tools.map((t) => (
+                      <span key={t} className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-2 text-sm">
+              <p className="text-destructive font-medium">Connection failed</p>
+              {testResult.error && (
+                <pre className="rounded-md bg-muted px-3 py-2 text-xs font-mono whitespace-pre-wrap break-all">
+                  {testResult.error}
+                </pre>
+              )}
+            </div>
+          )}
         </div>
       )}
 

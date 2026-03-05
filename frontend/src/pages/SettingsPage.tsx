@@ -31,6 +31,11 @@ export function SettingsPage() {
 
   const baseUrl = window.location.origin;
 
+  const tokenCurlCmd = `curl -s -X POST ${baseUrl}/api/auth/login \\
+  -H "Content-Type: application/json" \\
+  -d '{"email":"YOUR_EMAIL","password":"YOUR_PASSWORD"}' \\
+  | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])"`;
+
   const sseJson = JSON.stringify(
     {
       mcpServers: {
@@ -109,10 +114,35 @@ export function SettingsPage() {
           <h3 className="font-semibold mb-2">MCP Router Endpoint</h3>
           <p className="text-sm text-muted-foreground mb-4">
             Point your AI agent to this endpoint. Replace <code className="rounded bg-muted px-1 py-0.5 text-xs font-mono">YOUR_JWT_TOKEN</code> with
-            a token from <code className="rounded bg-muted px-1 py-0.5 text-xs font-mono">POST /api/auth/login</code>.
+            a token from the login endpoint.
           </p>
 
           <div className="space-y-4">
+            {/* Token retrieval command */}
+            <div>
+              <h4 className="text-sm font-medium mb-1.5">1. Get your JWT token</h4>
+              <p className="text-xs text-muted-foreground mb-1.5">
+                Run this command to get your access token (replace email and password with your credentials):
+              </p>
+              <div className="relative">
+                <pre className="rounded-md bg-muted px-4 py-3 text-xs font-mono overflow-x-auto whitespace-pre">
+                  {tokenCurlCmd}
+                </pre>
+                <CopyButton text={tokenCurlCmd} />
+              </div>
+              <p className="text-xs text-muted-foreground mt-1.5">
+                Or use the login API directly: <code className="rounded bg-muted px-1 py-0.5 text-xs font-mono">POST {baseUrl}/api/auth/login</code> with
+                body <code className="rounded bg-muted px-1 py-0.5 text-xs font-mono">{`{"email":"...","password":"..."}`}</code> — the response contains <code className="rounded bg-muted px-1 py-0.5 text-xs font-mono">access_token</code>.
+              </p>
+            </div>
+
+            <hr className="border-border" />
+
+            <h4 className="text-sm font-medium">2. Configure your MCP client</h4>
+            <p className="text-xs text-muted-foreground mb-2">
+              Paste one of the following JSON blocks into your MCP client config file, replacing <code className="rounded bg-muted px-1 py-0.5 text-xs font-mono">YOUR_JWT_TOKEN</code> with the token from step 1.
+            </p>
+
             {/* SSE config */}
             <div>
               <h4 className="text-sm font-medium mb-1.5">SSE Transport <span className="text-xs text-muted-foreground font-normal">(Claude Desktop, Cursor, Windsurf)</span></h4>

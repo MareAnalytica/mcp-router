@@ -29,3 +29,18 @@ export async function toggleServer(id: string): Promise<{ is_enabled: boolean }>
   const response = await api.post<{ is_enabled: boolean }>(`/servers/${id}/toggle`);
   return response.data;
 }
+
+export interface TestConnectionResult {
+  status: 'ok' | 'error';
+  server_name: string;
+  transport_type: string;
+  response_time_ms: number;
+  tools_count: number;
+  tools: string[];
+  error?: string;
+}
+
+export async function testConnection(id: string): Promise<TestConnectionResult> {
+  const response = await api.post<TestConnectionResult>(`/servers/${id}/test`);
+  return response.data;
+}
