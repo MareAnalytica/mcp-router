@@ -1,3 +1,5 @@
+import asyncio
+import json
 import logging
 import uuid
 
@@ -5,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sse_starlette.sse import EventSourceResponse
 
 from app.api.deps import get_current_user, get_db
 from app.mcp.aggregator import aggregator
@@ -15,6 +18,9 @@ from app.services.auth_service import decode_token
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["mcp-proxy"])
+
+# In-memory message queues for SSE sessions
+_sse_sessions: dict[str, asyncio.Queue] = {}
 
 
 def _jsonrpc_error(req_id, code: int, message: str) -> dict:
@@ -126,3 +132,90 @@ async def _handle_jsonrpc(body: dict, user: UserORM, session: AsyncSession) -> d
     except Exception as e:
         logger.exception("Error handling MCP method %s", method)
         return _jsonrpc_error(req_id, -32603, f"Internal error: {e}")
+
+
+# ---------------------------------------------------------------------------
+# SSE transport: GET /api/mcp/sse (event stream) + POST /api/mcp/sse (messages)
+# ---------------------------------------------------------------------------
+
+@router.get("/api/mcp/sse")
+async def mcp_sse_stream(
+    request: Request,
+    user: UserORM = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db),
+):
+    """
+    SSE endpoint. The client opens a GET connection here and receives a
+    server-sent event stream. The first event is an 'endpoint' event that
+    tells the client where to POST JSON-RPC messages.
+    """
+    session_id = str(uuid.uuid4())
+    queue: asyncio.Queue = asyncio.Queue()
+    _sse_sessions[session_id] = queue
+
+    # Store user/db info so the POST handler can reuse them
+    _sse_sessions[f"{session_id}:user"] = user  # type: ignore[assignment]
+
+    async def event_generator():
+        try:
+            # First event: tell the client the POST endpoint for this session
+            post_url = f"/api/mcp/sse?sessionId={session_id}"
+            yield {"event": "endpoint", "data": post_url}
+
+            # Then stream responses as they arrive
+            while True:
+                if await request.is_disconnected():
+                    break
+                try:
+                    message = await asyncio.wait_for(queue.get(), timeout=30.0)
+                    yield {"event": "message", "data": json.dumps(message)}
+                except asyncio.TimeoutError:
+                    # Send a keep-alive comment to prevent proxy timeouts
+                    yield {"comment": "keep-alive"}
+        finally:
+            _sse_sessions.pop(session_id, None)
+            _sse_sessions.pop(f"{session_id}:user", None)
+
+    return EventSourceResponse(event_generator())
+
+
+@router.post("/api/mcp/sse")
+async def mcp_sse_message(
+    request: Request,
+    sessionId: str | None = None,
+    session: AsyncSession = Depends(get_db),
+):
+    """
+    Receives JSON-RPC messages for an existing SSE session. Processes
+    the request and pushes the response onto the session's event queue.
+    """
+    if not sessionId or sessionId not in _sse_sessions:
+        return JSONResponse(
+            {"error": "Invalid or expired session ID"},
+            status_code=400,
+        )
+
+    queue = _sse_sessions[sessionId]
+    user = _sse_sessions.get(f"{sessionId}:user")
+    if not user:
+        return JSONResponse({"error": "Session user not found"}, status_code=400)
+
+    try:
+        body = await request.json()
+    except Exception:
+        error_resp = _jsonrpc_error(None, -32700, "Parse error")
+        await queue.put(error_resp)
+        return JSONResponse({"status": "error"}, status_code=400)
+
+    # Handle batch
+    if isinstance(body, list):
+        for item in body:
+            result = await _handle_jsonrpc(item, user, session)
+            if result is not None:
+                await queue.put(result)
+    else:
+        result = await _handle_jsonrpc(body, user, session)
+        if result is not None:
+            await queue.put(result)
+
+    return JSONResponse({"status": "ok"}, status_code=202)
