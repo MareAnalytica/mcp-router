@@ -37,24 +37,24 @@ spec:
             - name: POSTGRES_DB
               valueFrom:
                 secretKeyRef:
-                  name: MY_PROJECT-db    # EDIT: match secrets.yaml
+                  name: mcp-router-db    # EDIT: match secrets.yaml
                   key: POSTGRES_DB
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: MY_PROJECT-db
+                  name: mcp-router-db
                   key: POSTGRES_USER
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: MY_PROJECT-db
+                  name: mcp-router-db
                   key: POSTGRES_PASSWORD
           volumeMounts:
             - name: data
               mountPath: /var/lib/postgresql/data
           readinessProbe:
             exec:
-              command: ["pg_isready", "-U", "myuser", "-d", "mydb"]  # EDIT
+              command: ["pg_isready", "-U", "mcprouter", "-d", "mcprouter"]
             initialDelaySeconds: 5
             periodSeconds: 5
           resources:

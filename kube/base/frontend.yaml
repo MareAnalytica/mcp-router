@@ -1,5 +1,5 @@
 # kube/base/frontend.yaml
-# EDIT: replace MY_PROJECT with your project name
+# EDIT: replace mcp-router with your project name
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: registry.mareanalytica.com/MY_PROJECT-frontend:latest
+          image: registry.mareanalytica.com/mcp-router-frontend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 80
@@ -48,11 +48,11 @@ spec:
       targetPort: 80
 
 ---
-# EDIT: replace MY_PROJECT and the host with your project name
+# EDIT: replace mcp-router and the host with your project name
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: MY_PROJECT
+  name: mcp-router
   annotations:
     cert-manager.io/cluster-issuer: "mareanalytica-ca"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
@@ -62,10 +62,10 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - MY_PROJECT.mareanalytica.com
-      secretName: MY_PROJECT-tls
+        - mcp-router.mareanalytica.com
+      secretName: mcp-router-tls
   rules:
-    - host: MY_PROJECT.mareanalytica.com
+    - host: mcp-router.mareanalytica.com
       http:
         paths:
           # Frontend serves /

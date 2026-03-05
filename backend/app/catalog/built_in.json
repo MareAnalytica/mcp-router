@@ -1,0 +1,90 @@
+[
+  {
+    "catalog_slug": "github",
+    "name": "GitHub",
+    "description": "Interact with GitHub repositories, issues, pull requests, and more.",
+    "transport_type": "stdio",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-github"],
+    "env_vars": {"GITHUB_PERSONAL_ACCESS_TOKEN": "Your GitHub personal access token"},
+    "category": "developer-tools",
+    "icon_url": "https://github.githubassets.com/favicons/favicon.svg"
+  },
+  {
+    "catalog_slug": "filesystem",
+    "name": "Filesystem",
+    "description": "Read, write, and manage files on the local filesystem.",
+    "transport_type": "stdio",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-filesystem", "/tmp"],
+    "env_vars": {},
+    "category": "utilities",
+    "icon_url": null
+  },
+  {
+    "catalog_slug": "memory",
+    "name": "Memory",
+    "description": "Persistent memory storage using a knowledge graph.",
+    "transport_type": "stdio",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-memory"],
+    "env_vars": {},
+    "category": "utilities",
+    "icon_url": null
+  },
+  {
+    "catalog_slug": "brave-search",
+    "name": "Brave Search",
+    "description": "Web and local search using the Brave Search API.",
+    "transport_type": "stdio",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+    "env_vars": {"BRAVE_API_KEY": "Your Brave Search API key"},
+    "category": "search",
+    "icon_url": null
+  },
+  {
+    "catalog_slug": "puppeteer",
+    "name": "Puppeteer",
+    "description": "Browser automation for web scraping, screenshots, and interaction.",
+    "transport_type": "stdio",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-puppeteer"],
+    "env_vars": {},
+    "category": "browser",
+    "icon_url": null
+  },
+  {
+    "catalog_slug": "slack",
+    "name": "Slack",
+    "description": "Interact with Slack workspaces: channels, messages, and users.",
+    "transport_type": "stdio",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-slack"],
+    "env_vars": {"SLACK_BOT_TOKEN": "Your Slack bot OAuth token", "SLACK_TEAM_ID": "Your Slack team/workspace ID"},
+    "category": "communication",
+    "icon_url": null
+  },
+  {
+    "catalog_slug": "google-drive",
+    "name": "Google Drive",
+    "description": "Search and read files from Google Drive.",
+    "transport_type": "stdio",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-gdrive"],
+    "env_vars": {"GDRIVE_CLIENT_ID": "Google OAuth client ID", "GDRIVE_CLIENT_SECRET": "Google OAuth client secret"},
+    "category": "productivity",
+    "icon_url": null
+  },
+  {
+    "catalog_slug": "postgresql",
+    "name": "PostgreSQL",
+    "description": "Query and explore PostgreSQL databases.",
+    "transport_type": "stdio",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-postgres"],
+    "env_vars": {"POSTGRES_CONNECTION_STRING": "PostgreSQL connection string (e.g. postgresql://user:pass@host:5432/db)"},
+    "category": "databases",
+    "icon_url": null
+  }
+]

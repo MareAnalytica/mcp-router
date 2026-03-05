@@ -25,8 +25,8 @@ jobs:
       # └──────────────────────────────────────────────────────┘
       images: >-
         [
-          { "name": "MY_PROJECT-backend",  "context": "./backend",  "dockerfile": "./backend/Dockerfile" },
-          { "name": "MY_PROJECT-frontend", "context": "./frontend", "dockerfile": "./frontend/Dockerfile" }
+          { "name": "mcp-router-backend",  "context": "./backend",  "dockerfile": "./backend/Dockerfile" },
+          { "name": "mcp-router-frontend", "context": "./frontend", "dockerfile": "./frontend/Dockerfile" }
         ]
 
   deploy:
@@ -34,6 +34,6 @@ jobs:
     uses: ./.github/workflows/_deploy.yml
     with:
       environment: dev
-      namespace: MY_PROJECT-dev        # EDIT: your dev namespace
+      namespace: mcp-router-dev        # EDIT: your dev namespace
       deployments: "backend,frontend"  # EDIT: comma-separated deployment names
       rollout_timeout: "600s"

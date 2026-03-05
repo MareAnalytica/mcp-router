@@ -13,18 +13,18 @@ git clone git@github.com:MareAnalytica/my-new-service.git
 cd my-new-service
 ```
 
-### 2. Find & replace `MY_PROJECT`
+### 2. Find & replace `mcp-router`
 
-Replace all occurrences of `MY_PROJECT` with your project name (lowercase, hyphen-separated):
+Replace all occurrences of `mcp-router` with your project name (lowercase, hyphen-separated):
 
 ```bash
 # macOS
 find . -type f \( -name '*.yml' -o -name '*.yaml' -o -name '*.md' \) \
-  -exec sed -i '' 's/MY_PROJECT/my-new-service/g' {} +
+  -exec sed -i '' 's/mcp-router/my-new-service/g' {} +
 
 # Linux
 find . -type f \( -name '*.yml' -o -name '*.yaml' -o -name '*.md' \) \
-  -exec sed -i 's/MY_PROJECT/my-new-service/g' {} +
+  -exec sed -i 's/mcp-router/my-new-service/g' {} +
 ```
 
 ### 3. Add your Dockerfiles

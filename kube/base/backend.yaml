@@ -1,5 +1,4 @@
 # kube/base/backend.yaml
-# EDIT: replace MY_PROJECT with your project name
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -16,7 +15,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: registry.mareanalytica.com/MY_PROJECT-backend:latest
+          image: registry.mareanalytica.com/mcp-router-backend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
@@ -24,20 +23,30 @@ spec:
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
-                  name: MY_PROJECT-db
+                  name: mcp-router-db
                   key: DATABASE_URL
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: mcp-router-db
+                  key: JWT_SECRET
+            - name: FERNET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mcp-router-db
+                  key: FERNET_KEY
           readinessProbe:
             httpGet:
-              path: /health           # EDIT: your health endpoint
+              path: /health
               port: 8000
-            initialDelaySeconds: 10
+            initialDelaySeconds: 15
             periodSeconds: 5
           resources:
             requests:
               memory: "256Mi"
               cpu: "100m"
             limits:
-              memory: "1Gi"
+              memory: "2Gi"
               cpu: "1000m"
 
 ---

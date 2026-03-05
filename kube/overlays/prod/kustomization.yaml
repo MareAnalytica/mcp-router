@@ -3,7 +3,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: MY_PROJECT
+namespace: mcp-router
 
 resources:
   - ../../base
@@ -11,8 +11,8 @@ resources:
 patches:
   - target:
       kind: Namespace
-      name: MY_PROJECT
+      name: mcp-router
     patch: |
       - op: replace
         path: /metadata/name
-        value: MY_PROJECT
+        value: mcp-router

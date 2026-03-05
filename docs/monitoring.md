@@ -67,16 +67,16 @@ Pre-configured dashboards:
 4. Query examples:
    ```promql
    # Request rate for your service
-   rate(http_requests_total{namespace="MY_PROJECT-dev"}[5m])
+   rate(http_requests_total{namespace="mcp-router-dev"}[5m])
 
    # Memory usage
-   container_memory_working_set_bytes{namespace="MY_PROJECT-dev", container="backend"}
+   container_memory_working_set_bytes{namespace="mcp-router-dev", container="backend"}
 
    # CPU usage
-   rate(container_cpu_usage_seconds_total{namespace="MY_PROJECT-dev", container="backend"}[5m])
+   rate(container_cpu_usage_seconds_total{namespace="mcp-router-dev", container="backend"}[5m])
 
    # Pod restarts
-   kube_pod_container_status_restarts_total{namespace="MY_PROJECT-dev"}
+   kube_pod_container_status_restarts_total{namespace="mcp-router-dev"}
    ```
 
 ## Alertmanager
@@ -94,8 +94,8 @@ Create a `PrometheusRule` in your namespace:
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
-  name: MY_PROJECT-alerts
-  namespace: MY_PROJECT-dev
+  name: mcp-router-alerts
+  namespace: mcp-router-dev
   labels:
     release: kube-prometheus-stack
 spec:
@@ -103,7 +103,7 @@ spec:
     - name: my-project
       rules:
         - alert: HighErrorRate
-          expr: rate(http_requests_total{namespace="MY_PROJECT-dev", status=~"5.."}[5m]) > 0.1
+          expr: rate(http_requests_total{namespace="mcp-router-dev", status=~"5.."}[5m]) > 0.1
           for: 5m
           labels:
             severity: warning
@@ -117,35 +117,35 @@ Loki collects logs from all pods. Query via Grafana → Explore → Select "Loki
 
 ```logql
 # All logs from your namespace
-{namespace="MY_PROJECT-dev"}
+{namespace="mcp-router-dev"}
 
 # Logs from a specific container
-{namespace="MY_PROJECT-dev", container="backend"}
+{namespace="mcp-router-dev", container="backend"}
 
 # Filter for errors
-{namespace="MY_PROJECT-dev"} |= "ERROR"
+{namespace="mcp-router-dev"} |= "ERROR"
 
 # JSON log fields
-{namespace="MY_PROJECT-dev"} | json | level="error"
+{namespace="mcp-router-dev"} | json | level="error"
 ```
 
 ## Useful kubectl commands
 
 ```bash
 # Pod resource usage (requires metrics-server)
-kubectl top pods -n MY_PROJECT-dev
+kubectl top pods -n mcp-router-dev
 
 # Node resource usage
 kubectl top nodes
 
 # Pod logs
-kubectl logs -n MY_PROJECT-dev deploy/backend --tail=100 -f
+kubectl logs -n mcp-router-dev deploy/backend --tail=100 -f
 
 # Events (good for debugging scheduling issues)
-kubectl get events -n MY_PROJECT-dev --sort-by=.lastTimestamp
+kubectl get events -n mcp-router-dev --sort-by=.lastTimestamp
 
 # Check HPA status (if using)
-kubectl get hpa -n MY_PROJECT-dev
+kubectl get hpa -n mcp-router-dev
 ```
 
 ## Headlamp

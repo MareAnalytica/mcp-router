@@ -3,7 +3,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: MY_PROJECT-dev
+namespace: mcp-router-dev
 
 resources:
   - ../../base
@@ -12,26 +12,26 @@ patches:
   # Override namespace name for dev
   - target:
       kind: Namespace
-      name: MY_PROJECT
+      name: mcp-router
     patch: |
       - op: replace
         path: /metadata/name
-        value: MY_PROJECT-dev
+        value: mcp-router-dev
 
   # Override ingress host for dev
   - target:
       kind: Ingress
-      name: MY_PROJECT
+      name: mcp-router
     patch: |
       - op: replace
         path: /spec/tls/0/hosts/0
-        value: MY_PROJECT-dev.mareanalytica.com
+        value: mcp-router-dev.mareanalytica.com
       - op: replace
         path: /spec/tls/0/secretName
-        value: MY_PROJECT-dev-tls
+        value: mcp-router-dev-tls
       - op: replace
         path: /spec/rules/0/host
-        value: MY_PROJECT-dev.mareanalytica.com
+        value: mcp-router-dev.mareanalytica.com
 
   # Reduce resources for dev
   - target:
