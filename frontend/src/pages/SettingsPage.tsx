@@ -1,11 +1,84 @@
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { listUsers, updateUser, deleteUser } from '@/api/users';
 import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton';
+import { Copy, Check } from 'lucide-react';
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      className="absolute top-3 right-3 rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+      title="Copy to clipboard"
+    >
+      {copied ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
+    </button>
+  );
+}
 
 export function SettingsPage() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
+
+  const baseUrl = window.location.origin;
+
+  const sseJson = JSON.stringify(
+    {
+      mcpServers: {
+        "mcp-router": {
+          url: `${baseUrl}/api/mcp/sse`,
+          headers: {
+            Authorization: "Bearer YOUR_JWT_TOKEN",
+          },
+        },
+      },
+    },
+    null,
+    2
+  );
+
+  const stdioJson = JSON.stringify(
+    {
+      mcpServers: {
+        "mcp-router": {
+          command: "npx",
+          args: ["-y", "mcp-remote", `${baseUrl}/api/mcp/sse`],
+          env: {
+            MCP_HEADERS: JSON.stringify({
+              Authorization: "Bearer YOUR_JWT_TOKEN",
+            }),
+          },
+        },
+      },
+    },
+    null,
+    2
+  );
+
+  const httpJson = JSON.stringify(
+    {
+      mcpServers: {
+        "mcp-router": {
+          type: "streamable-http",
+          url: `${baseUrl}/api/mcp`,
+          headers: {
+            Authorization: "Bearer YOUR_JWT_TOKEN",
+          },
+        },
+      },
+    },
+    null,
+    2
+  );
 
   return (
     <div>
@@ -33,12 +106,45 @@ export function SettingsPage() {
 
         {/* Connection Info */}
         <div className="rounded-lg border border-border bg-card p-5">
-          <h3 className="font-semibold mb-4">MCP Router Endpoint</h3>
-          <p className="text-sm text-muted-foreground mb-3">
-            Point your AI agent to this endpoint. Include your JWT token as a Bearer token.
+          <h3 className="font-semibold mb-2">MCP Router Endpoint</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Point your AI agent to this endpoint. Replace <code className="rounded bg-muted px-1 py-0.5 text-xs font-mono">YOUR_JWT_TOKEN</code> with
+            a token from <code className="rounded bg-muted px-1 py-0.5 text-xs font-mono">POST /api/auth/login</code>.
           </p>
-          <div className="rounded-md bg-muted px-3 py-2 font-mono text-sm">
-            POST {window.location.origin}/api/mcp
+
+          <div className="space-y-4">
+            {/* SSE config */}
+            <div>
+              <h4 className="text-sm font-medium mb-1.5">SSE Transport <span className="text-xs text-muted-foreground font-normal">(Claude Desktop, Cursor, Windsurf)</span></h4>
+              <div className="relative">
+                <pre className="rounded-md bg-muted px-4 py-3 text-xs font-mono overflow-x-auto whitespace-pre">
+                  {sseJson}
+                </pre>
+                <CopyButton text={sseJson} />
+              </div>
+            </div>
+
+            {/* STDIO via mcp-remote */}
+            <div>
+              <h4 className="text-sm font-medium mb-1.5">STDIO via mcp-remote <span className="text-xs text-muted-foreground font-normal">(clients that only support stdio)</span></h4>
+              <div className="relative">
+                <pre className="rounded-md bg-muted px-4 py-3 text-xs font-mono overflow-x-auto whitespace-pre">
+                  {stdioJson}
+                </pre>
+                <CopyButton text={stdioJson} />
+              </div>
+            </div>
+
+            {/* Streamable HTTP */}
+            <div>
+              <h4 className="text-sm font-medium mb-1.5">Streamable HTTP <span className="text-xs text-muted-foreground font-normal">(newer clients with HTTP transport)</span></h4>
+              <div className="relative">
+                <pre className="rounded-md bg-muted px-4 py-3 text-xs font-mono overflow-x-auto whitespace-pre">
+                  {httpJson}
+                </pre>
+                <CopyButton text={httpJson} />
+              </div>
+            </div>
           </div>
         </div>
 

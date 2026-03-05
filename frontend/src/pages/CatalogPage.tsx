@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Search, Store, Check, Plus } from 'lucide-react';
+import { Search, Store, Check, Plus, ExternalLink, ShieldCheck, Shield, ShieldAlert, ShieldQuestion } from 'lucide-react';
 import { listCatalog, enableCatalogEntry } from '@/api/catalog';
 import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton';
 import { EmptyState } from '@/components/shared/EmptyState';
@@ -9,17 +9,82 @@ import { cn } from '@/lib/utils';
 const categories = [
   { value: '', label: 'All' },
   { value: 'developer-tools', label: 'Developer Tools' },
-  { value: 'utilities', label: 'Utilities' },
-  { value: 'search', label: 'Search' },
-  { value: 'browser', label: 'Browser' },
-  { value: 'communication', label: 'Communication' },
-  { value: 'productivity', label: 'Productivity' },
   { value: 'databases', label: 'Databases' },
+  { value: 'cloud', label: 'Cloud' },
+  { value: 'productivity', label: 'Productivity' },
+  { value: 'communication', label: 'Communication' },
+  { value: 'browser', label: 'Browser' },
+  { value: 'search', label: 'Search' },
+  { value: 'utilities', label: 'Utilities' },
+  { value: 'ai-ml', label: 'AI / ML' },
+  { value: 'security', label: 'Security' },
+  { value: 'media', label: 'Media' },
+  { value: 'finance', label: 'Finance' },
+  { value: 'e-commerce', label: 'E-Commerce' },
 ];
+
+const trustConfig = {
+  official: {
+    icon: ShieldCheck,
+    label: 'Official',
+    tooltip: 'Maintained by the MCP project',
+    bg: 'bg-primary/10',
+    text: 'text-primary',
+  },
+  verified: {
+    icon: Shield,
+    label: 'Verified',
+    tooltip: 'Published by the vendor',
+    bg: 'bg-success/10',
+    text: 'text-success',
+  },
+  community: {
+    icon: ShieldAlert,
+    label: 'Community',
+    tooltip: 'Community-maintained — review before use',
+    bg: 'bg-warning/10',
+    text: 'text-warning',
+  },
+  unverified: {
+    icon: ShieldQuestion,
+    label: 'Unverified',
+    tooltip: 'Source not verified — use with caution',
+    bg: 'bg-destructive/10',
+    text: 'text-destructive',
+  },
+} as const;
+
+const trustFilters = [
+  { value: '', label: 'Any trust' },
+  { value: 'official', label: 'Official' },
+  { value: 'verified', label: 'Verified' },
+  { value: 'community', label: 'Community' },
+];
+
+function TrustBadge({ level }: { level: string | null }) {
+  const key = (level || 'unverified') as keyof typeof trustConfig;
+  const config = trustConfig[key] || trustConfig.unverified;
+  const Icon = config.icon;
+
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
+        config.bg,
+        config.text
+      )}
+      title={config.tooltip}
+    >
+      <Icon className="h-3 w-3" />
+      {config.label}
+    </span>
+  );
+}
 
 export function CatalogPage() {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
+  const [trustFilter, setTrustFilter] = useState('');
   const queryClient = useQueryClient();
 
   const { data: catalog, isLoading } = useQuery({
@@ -35,6 +100,10 @@ export function CatalogPage() {
     },
   });
 
+  const filteredCatalog = trustFilter
+    ? catalog?.filter((e) => e.trust_level === trustFilter)
+    : catalog;
+
   if (isLoading) {
     return (
       <div>
@@ -48,7 +117,10 @@ export function CatalogPage() {
     <div>
       <div className="mb-6">
         <h1 className="text-2xl font-bold">MCP Server Catalog</h1>
-        <p className="text-muted-foreground mt-1">Browse and enable popular MCP servers with one click.</p>
+        <p className="text-muted-foreground mt-1">
+          Browse and enable popular MCP servers with one click.
+          <span className="ml-1 text-xs">({filteredCatalog?.length || 0} servers)</span>
+        </p>
       </div>
 
       {/* Search + Filters */}
@@ -79,10 +151,27 @@ export function CatalogPage() {
             </button>
           ))}
         </div>
+
+        <div className="flex flex-wrap gap-2">
+          {trustFilters.map((tf) => (
+            <button
+              key={tf.value}
+              onClick={() => setTrustFilter(tf.value)}
+              className={cn(
+                'rounded-full px-3 py-1 text-xs font-medium transition-colors border',
+                trustFilter === tf.value
+                  ? 'border-primary bg-primary/10 text-primary'
+                  : 'border-border text-muted-foreground hover:bg-accent'
+              )}
+            >
+              {tf.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Grid */}
-      {!catalog || catalog.length === 0 ? (
+      {!filteredCatalog || filteredCatalog.length === 0 ? (
         <EmptyState
           icon={Store}
           title="No servers found"
@@ -90,31 +179,53 @@ export function CatalogPage() {
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {catalog.map((entry) => (
+          {filteredCatalog.map((entry) => (
             <div
               key={entry.id}
               className="rounded-lg border border-border bg-card p-5 flex flex-col"
             >
-              <div className="flex items-start gap-3 mb-3">
-                <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center text-primary font-bold text-lg shrink-0">
-                  {entry.name.charAt(0)}
+              <div className="flex items-start justify-between gap-2 mb-3">
+                <div className="flex items-start gap-3 min-w-0">
+                  <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center text-primary font-bold text-lg shrink-0">
+                    {entry.name.charAt(0)}
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-card-foreground">{entry.name}</h3>
+                    {entry.category && (
+                      <span className="text-xs text-muted-foreground">{entry.category}</span>
+                    )}
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <h3 className="font-semibold text-card-foreground">{entry.name}</h3>
-                  {entry.category && (
-                    <span className="text-xs text-muted-foreground">{entry.category}</span>
-                  )}
-                </div>
+                <TrustBadge level={entry.trust_level} />
               </div>
 
-              <p className="text-sm text-muted-foreground mb-4 flex-1">
+              <p className="text-sm text-muted-foreground mb-3 flex-1">
                 {entry.description || 'No description available.'}
               </p>
 
+              {entry.source && entry.source !== 'community' && (
+                <p className="text-xs text-muted-foreground mb-3">
+                  by <span className="font-medium">{entry.source}</span>
+                </p>
+              )}
+
               <div className="flex items-center justify-between mt-auto">
-                <span className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
-                  {entry.transport_type}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
+                    {entry.transport_type}
+                  </span>
+                  {entry.repo_url && (
+                    <a
+                      href={entry.repo_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                      title="View source"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  )}
+                </div>
 
                 {entry.is_enabled_by_user ? (
                   <span className="inline-flex items-center gap-1 text-xs font-medium text-success">

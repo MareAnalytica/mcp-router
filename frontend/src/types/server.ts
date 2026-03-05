@@ -14,6 +14,9 @@ export interface McpServer {
   catalog_slug: string | null;
   icon_url: string | null;
   category: string | null;
+  trust_level: string | null;
+  source: string | null;
+  repo_url: string | null;
   is_enabled: boolean | null;
   created_at: string;
 }

@@ -51,6 +51,9 @@ class McpServerORM(Base):
     catalog_slug: Mapped[Optional[str]] = mapped_column(String(100), unique=True, nullable=True)
     icon_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     category: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    trust_level: Mapped[Optional[str]] = mapped_column(String(20), nullable=True, default="unverified")
+    source: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    repo_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_by: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow, onupdate=utcnow)
@@ -182,6 +185,9 @@ class ServerResponse(BaseModel):
     catalog_slug: Optional[str]
     icon_url: Optional[str]
     category: Optional[str]
+    trust_level: Optional[str] = "unverified"
+    source: Optional[str] = None
+    repo_url: Optional[str] = None
     is_enabled: Optional[bool] = None
     created_at: datetime
 
@@ -225,6 +231,9 @@ class CatalogEntryResponse(BaseModel):
     icon_url: Optional[str]
     category: Optional[str]
     env_vars: Optional[dict[str, str]]
+    trust_level: Optional[str] = "unverified"
+    source: Optional[str] = None
+    repo_url: Optional[str] = None
     is_enabled_by_user: bool = False
 
     model_config = {"from_attributes": True}

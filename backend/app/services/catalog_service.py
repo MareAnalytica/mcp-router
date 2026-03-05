@@ -35,6 +35,9 @@ async def seed_catalog(session: AsyncSession) -> None:
             existing.env_vars = entry.get("env_vars", {})
             existing.icon_url = entry.get("icon_url")
             existing.category = entry.get("category")
+            existing.trust_level = entry.get("trust_level", "unverified")
+            existing.source = entry.get("source")
+            existing.repo_url = entry.get("repo_url")
         else:
             server = McpServerORM(
                 name=entry["name"],
@@ -49,6 +52,9 @@ async def seed_catalog(session: AsyncSession) -> None:
                 catalog_slug=slug,
                 icon_url=entry.get("icon_url"),
                 category=entry.get("category"),
+                trust_level=entry.get("trust_level", "unverified"),
+                source=entry.get("source"),
+                repo_url=entry.get("repo_url"),
             )
             session.add(server)
 
