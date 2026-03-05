@@ -3,7 +3,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { listUsers, updateUser, deleteUser } from '@/api/users';
 import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton';
-import { Copy, Check } from 'lucide-react';
+import { Copy, Check, Key } from 'lucide-react';
+import { api } from '@/api/client';
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -31,6 +32,26 @@ export function SettingsPage() {
 
   const baseUrl = window.location.origin;
 
+  // MCP Token state
+  const [mcpToken, setMcpToken] = useState<string | null>(null);
+  const [showToken, setShowToken] = useState(false);
+
+  // Generate MCP token mutation
+  const generateTokenMutation = useMutation({
+    mutationFn: async () => {
+      const response = await api.post('/api/auth/mcp-token');
+      return response.data.access_token;
+    },
+    onSuccess: (token) => {
+      setMcpToken(token);
+      setShowToken(true);
+    },
+  });
+
+  const handleGenerateToken = () => {
+    generateTokenMutation.mutate();
+  };
+
   const tokenCurlCmd = `curl -s -X POST ${baseUrl}/api/auth/login \\
   -H "Content-Type: application/json" \\
   -d '{"email":"YOUR_EMAIL","password":"YOUR_PASSWORD"}' \\
@@ -42,7 +63,7 @@ export function SettingsPage() {
         "mcp-router": {
           url: `${baseUrl}/api/mcp/sse`,
           headers: {
-            Authorization: "Bearer YOUR_JWT_TOKEN",
+            Authorization: `Bearer ${mcpToken || 'YOUR_JWT_TOKEN'}`,
           },
         },
       },
@@ -59,7 +80,7 @@ export function SettingsPage() {
           args: ["-y", "mcp-remote", `${baseUrl}/api/mcp/sse`],
           env: {
             MCP_HEADERS: JSON.stringify({
-              Authorization: "Bearer YOUR_JWT_TOKEN",
+              Authorization: `Bearer ${mcpToken || 'YOUR_JWT_TOKEN'}`,
             }),
           },
         },
@@ -76,7 +97,7 @@ export function SettingsPage() {
           type: "streamable-http",
           url: `${baseUrl}/api/mcp`,
           headers: {
-            Authorization: "Bearer YOUR_JWT_TOKEN",
+            Authorization: `Bearer ${mcpToken || 'YOUR_JWT_TOKEN'}`,
           },
         },
       },
@@ -113,14 +134,57 @@ export function SettingsPage() {
         <div className="rounded-lg border border-border bg-card p-5">
           <h3 className="font-semibold mb-2">MCP Router Endpoint</h3>
           <p className="text-sm text-muted-foreground mb-4">
-            Point your AI agent to this endpoint. Replace <code className="rounded bg-muted px-1 py-0.5 text-xs font-mono">YOUR_JWT_TOKEN</code> with
-            a token from the login endpoint.
+            Point your AI agent to this endpoint. Use the non-expiring token below for your MCP configuration.
           </p>
 
           <div className="space-y-4">
+            {/* MCP Token Generator */}
+            <div>
+              <h4 className="text-sm font-medium mb-1.5 flex items-center gap-2">
+                <Key className="h-4 w-4" />
+                Generate Non-Expiring MCP Token
+              </h4>
+              <p className="text-xs text-muted-foreground mb-2">
+                This token does not expire and can be used in your mcp.json configuration. You can generate a new token at any time.
+              </p>
+              
+              {!mcpToken || !showToken ? (
+                <button
+                  onClick={handleGenerateToken}
+                  disabled={generateTokenMutation.isPending}
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {generateTokenMutation.isPending ? 'Generating...' : 'Generate MCP Token'}
+                </button>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium">Your MCP Access Token:</p>
+                    <button
+                      onClick={() => setShowToken(!showToken)}
+                      className="text-xs text-muted-foreground hover:text-foreground underline"
+                    >
+                      Hide Token
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <pre className="rounded-md bg-muted px-4 py-3 text-xs font-mono overflow-x-auto whitespace-pre break-all">
+                      {mcpToken}
+                    </pre>
+                    <CopyButton text={mcpToken} />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    ⚠️ Store this token securely. It won't be shown again unless you generate a new one.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <hr className="border-border" />
+
             {/* Token retrieval command */}
             <div>
-              <h4 className="text-sm font-medium mb-1.5">1. Get your JWT token</h4>
+              <h4 className="text-sm font-medium mb-1.5">Alternative: Get temporary JWT token (expires in 15 minutes)</h4>
               <p className="text-xs text-muted-foreground mb-1.5">
                 Run this command to get your access token (replace email and password with your credentials):
               </p>
@@ -140,7 +204,7 @@ export function SettingsPage() {
 
             <h4 className="text-sm font-medium">2. Configure your MCP client</h4>
             <p className="text-xs text-muted-foreground mb-2">
-              Paste one of the following JSON blocks into your MCP client config file, replacing <code className="rounded bg-muted px-1 py-0.5 text-xs font-mono">YOUR_JWT_TOKEN</code> with the token from step 1.
+              Paste one of the following JSON blocks into your MCP client config file. The token field will be automatically filled with your generated non-expiring token above.
             </p>
 
             {/* SSE config */}

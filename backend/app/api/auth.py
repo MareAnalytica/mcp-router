@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,6 +21,12 @@ from app.services.auth_service import (
 )
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
+
+
+class MCPTokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "Bearer"
+    expires_in: int | None = None  # None means non-expiring
 
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
@@ -91,3 +98,23 @@ async def refresh(data: RefreshRequest, session: AsyncSession = Depends(get_db))
 @router.get("/me", response_model=UserResponse)
 async def get_me(user: UserORM = Depends(get_current_user)):
     return user
+
+
+@router.post("/mcp-token", response_model=MCPTokenResponse)
+async def generate_mcp_token(
+    user: UserORM = Depends(get_current_user),
+):
+    """
+    Generate a non-expiring MCP access token for use in mcp.json configuration.
+    
+    This token does not expire and can be used to authenticate MCP clients.
+    You can regenerate tokens at any time from the UI if needed.
+    """
+    # Generate a non-expiring token
+    token = create_access_token(str(user.id), user.role, no_expiry=True)
+    
+    return MCPTokenResponse(
+        access_token=token,
+        token_type="Bearer",
+        expires_in=None  # Non-expiring
+    )

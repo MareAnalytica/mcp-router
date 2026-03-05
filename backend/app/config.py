@@ -10,6 +10,7 @@ class Settings(BaseSettings):
 
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    MCP_TOKEN_NO_EXPIRY: bool = True  # Allow non-expiring tokens for MCP access
 
     HEALTH_CHECK_INTERVAL_SECONDS: int = 300
     UPSTREAM_TIMEOUT_SECONDS: int = 30

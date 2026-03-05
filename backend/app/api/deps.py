@@ -22,7 +22,15 @@ async def get_current_user(
     session: AsyncSession = Depends(get_db),
 ) -> UserORM:
     try:
-        payload = decode_token(credentials.credentials)
+        # First decode without verifying expiry to check token type
+        payload = decode_token(credentials.credentials, verify_exp=False)
+        
+        # Check if this is a non-expiring token
+        no_expiry = payload.get("no_expiry", False)
+        
+        # Verify expiration only if it's not a non-expiring token
+        if not no_expiry:
+            payload = decode_token(credentials.credentials, verify_exp=True)
     except ValueError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
