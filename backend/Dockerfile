@@ -11,6 +11,10 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt-get install -y nodejs && \
     rm -rf /var/lib/apt/lists/*
 
+# Install uv (needed for STDIO MCP servers that use uvx, e.g. Grafana)
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin:$PATH"
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
