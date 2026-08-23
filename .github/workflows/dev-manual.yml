@@ -17,4 +17,6 @@ jobs:
           { "name": "mcp-router-backend",  "context": "./backend",  "dockerfile": "./backend/Dockerfile" },
           { "name": "mcp-router-frontend", "context": "./frontend", "dockerfile": "./frontend/Dockerfile" }
         ]
-
+    # The reusable workflow needs the Harbor push credentials; a called
+    # workflow sees no caller secrets unless they are inherited.
+    secrets: inherit
