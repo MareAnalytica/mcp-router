@@ -54,7 +54,10 @@ kind: Ingress
 metadata:
   name: mcp-router
   annotations:
-    cert-manager.io/cluster-issuer: "mareanalytica-ca"
+    # Was "mareanalytica-ca", an internal CA that died with the old cluster, so
+    # the Certificate sat unissued and the ingress served no TLS at all. The
+    # rebuilt estate issues from Let's Encrypt over Cloudflare DNS-01.
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
