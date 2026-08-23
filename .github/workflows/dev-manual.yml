@@ -1,9 +1,9 @@
 # .github/workflows/dev-manual.yml
 # ─────────────────────────────────────────────────────────────
-# Manually build + deploy any branch to dev.
-# Trigger from: Actions tab → "Deploy Branch → Dev" → Run workflow → pick branch
+# Manually build any branch into the dev Harbor project. ArgoCD deploys.
+# Trigger from: Actions tab → "Build Branch → Dev" → Run workflow → pick branch
 # ─────────────────────────────────────────────────────────────
-name: Deploy Branch → Dev
+name: Build Branch → Dev
 
 on:
   workflow_dispatch:
@@ -18,10 +18,3 @@ jobs:
           { "name": "mcp-router-frontend", "context": "./frontend", "dockerfile": "./frontend/Dockerfile" }
         ]
 
-  deploy:
-    needs: build
-    uses: ./.github/workflows/_deploy.yml
-    with:
-      environment: dev
-      namespace: mcp-router-dev
-      deployments: "backend,frontend"

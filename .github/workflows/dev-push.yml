@@ -1,6 +1,6 @@
 # .github/workflows/dev-push.yml
 # ─────────────────────────────────────────────────────────────
-# Push to main → build all images → deploy to dev.
+# Push to main → build all images. ArgoCD deploys.
 # ── PROJECT-SPECIFIC: edit the `with:` values below. ─────────
 # ─────────────────────────────────────────────────────────────
 name: CI → Dev
@@ -29,11 +29,3 @@ jobs:
           { "name": "mcp-router-frontend", "context": "./frontend", "dockerfile": "./frontend/Dockerfile" }
         ]
 
-  deploy:
-    needs: build
-    uses: ./.github/workflows/_deploy.yml
-    with:
-      environment: dev
-      namespace: mcp-router-dev        # EDIT: your dev namespace
-      deployments: "backend,frontend"  # EDIT: comma-separated deployment names
-      rollout_timeout: "600s"

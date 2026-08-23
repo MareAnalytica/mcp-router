@@ -1,6 +1,6 @@
 # .github/workflows/prod-tag.yml
 # ─────────────────────────────────────────────────────────────
-# Tag v* → build all images → deploy to prod.
+# Tag v* → build all images. ArgoCD deploys.
 # ── PROJECT-SPECIFIC: edit the `with:` values below. ─────────
 # ─────────────────────────────────────────────────────────────
 name: Release → Prod
@@ -22,10 +22,3 @@ jobs:
           { "name": "mcp-router-frontend", "context": "./frontend", "dockerfile": "./frontend/Dockerfile" }
         ]
 
-  deploy:
-    needs: build
-    uses: ./.github/workflows/_deploy.yml
-    with:
-      environment: prod
-      namespace: mcp-router            # EDIT: your prod namespace
-      deployments: "backend,frontend"  # EDIT: comma-separated deployment names

@@ -19,7 +19,7 @@ on:
         description: "Registry host:port (in-cluster or external)"
         required: false
         type: string
-        default: "registry.mareanalytica.com"
+        default: "harbor.dev.mareanalytica.com/mare-dev"
       filter:
         description: "Optional substring filter — only build images whose name contains this. Empty = all."
         required: false
@@ -28,7 +28,7 @@ on:
 
 jobs:
   build:
-    runs-on: arc-runner-set
+    runs-on: liquidmetal-dev
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,12 +43,6 @@ jobs:
           done
           docker info > /dev/null 2>&1 || { echo "Docker not ready after 60s"; exit 1; }
           echo "✓ Docker is ready"
-
-      - name: Verify registry connectivity
-        run: |
-          set -euo pipefail
-          echo "Testing registry at ${{ inputs.registry }}..."
-          curl -sf --cacert /etc/ssl/certs/registry-ca.crt https://${{ inputs.registry }}/v2/ > /dev/null && echo "✓ Registry reachable"
 
       - name: Build and push images
         env:

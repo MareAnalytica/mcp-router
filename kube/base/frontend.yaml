@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: registry.mareanalytica.com/mcp-router-frontend:latest
+          image: harbor.dev.mareanalytica.com/mare-dev/mcp-router-frontend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 80
