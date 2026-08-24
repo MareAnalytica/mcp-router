@@ -4,7 +4,7 @@ CI builds and pushes an image. **ArgoCD deploys.** CI holds no cluster
 credentials — that is the whole point of the split.
 
 - push to `main`  → `.github/workflows/dev-push.yml` builds both images into
-  `harbor.mareanalytica.com/mare-dev/` on the in-cluster runners
+  `registry.mareanalytica.com/mare-dev/` on the in-cluster runners
 - tag `v*`        → `prod-tag.yml`, same but for a release build
 - ArgoCD watches `MareAnalytica/gitops` → `apps/dev/mcp-router.yaml`, which
   points back at this repo's `kube/overlays/dev`

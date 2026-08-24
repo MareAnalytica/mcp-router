@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: harbor.mareanalytica.com/mare-dev/mcp-router-backend:latest
+          image: registry.mareanalytica.com/mare-dev/mcp-router-backend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
