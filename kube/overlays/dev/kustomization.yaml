@@ -67,3 +67,20 @@ patches:
                   limits:
                     memory: "512Mi"
                     cpu: "500m"
+
+# ── THE BLOCK CI REWRITES ─────────────────────────────────────────────────────
+# The dev-tag lane (.github/workflows/dev-tag.yml) rewrites this block by literal
+# path: it matches `- name: <image>` exactly, then the first newTag:/digest: line
+# under it. Keep the `- name:` lines byte-exact and give every entry a version
+# line.
+#
+# Seeded with `newTag: latest`, which is a deliberate no-op - it is what the base
+# already requests, so adding this block changed nothing. The first
+# vX.Y.Z-dev.N tag replaces each line with the digest it just built, and from
+# then on ArgoCD deploys a content-addressed image instead of a moving tag.
+# The pin commit IS the deploy: a moving tag alone never makes ArgoCD sync.
+images:
+  - name: registry.mareanalytica.com/mare-dev/mcp-router-backend
+    newTag: latest
+  - name: registry.mareanalytica.com/mare-dev/mcp-router-frontend
+    newTag: latest
