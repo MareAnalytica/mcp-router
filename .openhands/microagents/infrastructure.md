@@ -29,7 +29,7 @@
 ## Conventions
 - Image names: `registry.mareanalytica.com/<project>-<component>:latest`
 - Dev namespace: `<project>-dev`, prod namespace: `<project>`
-- Dev URL: `<project>-dev.mareanalytica.com`, prod URL: `<project>.mareanalytica.com`
+- Dev URL: `<project>.dev.mareanalytica.com`, prod URL: `<project>.mareanalytica.com`
 - All deployments use `imagePullPolicy: Always`
 - Resources: set both `requests` and `limits`; keep requests low for dev
 - Dockerfiles should be slim/alpine-based where possible

@@ -18,20 +18,33 @@ patches:
         path: /metadata/name
         value: mcp-router-dev
 
-  # Override ingress host for dev
+  # Override ingress host for dev.
+  #
+  # Dev services now live under dev.mareanalytica.com rather than carrying a
+  # -dev suffix on the prod name, so dev and prod are told apart by domain.
+  #
+  # ingressClassName is forced to traefik here too. base/frontend.yaml still
+  # says nginx, which was correct on the old cluster; this one runs Traefik and
+  # has no nginx controller, so an Ingress asking for class nginx is picked up
+  # by nothing and the host 404s at the edge. Traefik's IngressClass is marked
+  # default, but a default only applies when an Ingress names no class at all -
+  # an explicit nginx is still an explicit no.
   - target:
       kind: Ingress
       name: mcp-router
     patch: |
       - op: replace
+        path: /spec/ingressClassName
+        value: traefik
+      - op: replace
         path: /spec/tls/0/hosts/0
-        value: mcp-router-dev.mareanalytica.com
+        value: mcp-router.dev.mareanalytica.com
       - op: replace
         path: /spec/tls/0/secretName
         value: mcp-router-dev-tls
       - op: replace
         path: /spec/rules/0/host
-        value: mcp-router-dev.mareanalytica.com
+        value: mcp-router.dev.mareanalytica.com
 
   # Reduce resources for dev
   - target:

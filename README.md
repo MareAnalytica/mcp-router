@@ -64,7 +64,7 @@ Open a pull request on GitHub. Once reviewed and merged to `main`, the CI/CD pip
 2. **Deploy** — Kustomize applies to `my-new-service-dev` namespace
 3. **Rollout** — Deployments are restarted and verified
 
-Your service will be available at: `https://my-new-service-dev.mareanalytica.com`
+Your service will be available at: `https://my-new-service.dev.mareanalytica.com`
 
 ### 7. Deploy a branch to dev (manual)
 
